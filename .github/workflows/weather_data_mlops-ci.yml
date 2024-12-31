@@ -1,0 +1,41 @@
+name: Weather Data Pipeline
+
+on:
+  schedule:
+    - cron: '0 */2 * * *' # Run every 2 hours
+  workflow_dispatch: # Allows manual triggering of the workflow
+
+jobs:
+  weather-data-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the repository
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    # Step 2: Setup Python
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    # Step 3: Install dependencies
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # Step 4: Run Weather Data Pipeline
+    - name: Run Weather Data Pipeline
+      env:
+        API_KEY: ${{ secrets.OPENWEATHER_API_KEY }} # OpenWeatherMap API key stored securely in GitHub Secrets
+      run: |
+        python model/weather_forecast.py
+
+    # Step 5: Save output artifact (optional step to save visualizations)
+    - name: Upload Generated Outputs
+      uses: actions/upload-artifact@v3
+      with:
+        name: weather-data-output
+        path: output/
